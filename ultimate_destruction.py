@@ -12,6 +12,7 @@ from preprocess import lemma_pp
 
 tqdm.pandas()
 
+startnum, subsetnum=[int(i) for i in input("Enter subsetNum: ").split(" ")]
 model=SentenceTransformer('data/models/')
 nlp=spacy.load('en_core_web_sm')
 DATA_DIR="data/cleaned/"
@@ -123,7 +124,7 @@ if __name__=="__main__":
     df_train['long_description'].fillna(df_train['description'], inplace=True)
     df_train['long_description'].fillna(df_train['title'], inplace=True)
 
-    result=df_train.progress_apply(the_destructor, axis=1, result_type='expand')
+    result=df_train[startnum:subsetnum].progress_apply(the_destructor, axis=1, result_type='expand')
     result.columns=['id', 'keywords']
     result=result.set_index('id')
     result.to_csv(DATA_DIR+"submission_%d.csv"%subsetnum)
