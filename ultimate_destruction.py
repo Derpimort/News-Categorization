@@ -13,7 +13,7 @@ from preprocess import lemma_pp
 tqdm.pandas()
 
 startnum, subsetnum=[int(i) for i in input("Enter subsetNum: ").split(" ")]
-model=SentenceTransformer('data/models/')
+model=SentenceTransformer('roberta-large-nli-stsb-mean-tokens')
 nlp=spacy.load('en_core_web_sm')
 DATA_DIR="data/cleaned/"
 considered_tags = set(['NN', 'NNS', 'NNP', 'NNPS', 'JJ'])

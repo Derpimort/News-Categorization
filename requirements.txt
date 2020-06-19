@@ -1,0 +1,16 @@
+os
+re
+nltk
+numpy
+pandas
+sklearn
+spacy
+urllib
+gensim
+pandarallel
+langdetect
+tqdm
+sentence-transformers
+
+
+
