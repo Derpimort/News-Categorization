@@ -1,5 +1,3 @@
-os
-re
 nltk
 numpy
 pandas
