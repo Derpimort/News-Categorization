@@ -15,7 +15,7 @@ Unsupervised categorization of news articles
 0. Install PyTorch
     - `pip install torch torchvision` if cuda gpu available (Recommended).
     - `pip install torch==1.5.0+cpu torchvision==0.6.0+cpu -f https://download.pytorch.org/whl/torch_stable.html` for cpu only.
-    - 'https://pytorch.org/' or just go to this site to get the best version for you.
+    - https://pytorch.org - or just go to this site to get the best version for you.
 1. Run `pip install -r requirements.txt`
 2. Open a python interpreter and run
     ```
