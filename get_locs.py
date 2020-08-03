@@ -17,7 +17,7 @@ def get_locs(docents):
     res=[]
     for entity in docents:
         if entity.label_ in loc_labels:
-            res.append(entity.text)
+            res.append(re.sub("[^A-Za-z,]","",entity.text).lower()) 
     if not res:
         return [''], ''
     else:
