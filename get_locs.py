@@ -1,5 +1,8 @@
 import os
 import re
+import queue
+from queue import Queue
+from threading import Thread
 import csv
 import nltk
 import numpy as np
@@ -42,12 +45,32 @@ all_locs['name'] = all_locs['name'].str.lower()
 all_locs['state_name'] = all_locs['admin1 code'].fillna(0.0).round(0).astype(int)
 #all_locs['admin1 code'] = all_locs['admin1 code'].apply(lambda x: 'IN.'+str(round(x)))
 #all_locs = all_locs.join(states['state_name'], on='admin1 code')
+
+queue1 = Queue(maxsize=0)
+
 if not os.path.isfile(DATA_DIR+"latlong.csv"):
     with open(DATA_DIR+"latlong.csv", "w") as f:
         f.write("article_id,lat,long,state_code\n")
 
-coords = open(DATA_DIR+"latlong.csv", "a", 100*1024*1024, newline="\n")
-#coords_writer = csv.writer(coords, delimiter=',', quotechar='"', quoting = csv.QUOTE_MINIMAL)
+class CoordWorker(Thread):
+    def __init__(self, queue, num, df):
+        Thread.__init__(self)
+        self.queue = queue
+        self.f = open(DATA_DIR+"latlong_%d.csv"%num, "a")
+        self.df = df
+
+    def close(self):
+        self.f.close()
+    
+    def run(self):
+        while True:
+            try:
+                article_id, tags = self.queue.get()
+                for i in self.df[self.df['name'].isin(tags)].itertuples(index=False, name=None):
+                    self.f.write("%d,%f,%f,%d\n"%(article_id,i[1],i[2],i[-1]))
+                self.queue.task_done()
+            except queue.Empty:
+                pass
 
 def write_coords(article_id, tags):
     for i in all_locs[all_locs['name'].isin(tags)].itertuples(index=False, name=None):
@@ -63,7 +86,7 @@ def get_locs(docents):
     res=[]
     for entity in docents:
         if entity.label_ in loc_labels:
-            res.append(re.sub("[^a-z,]","",entity.text.lower()))
+            res.append(re.sub("[^a-z, ]","",entity.text.lower()))
     if not res:
         return [''], ''
     else:
@@ -81,6 +104,7 @@ def loc_destroyer(row):
             #sentence=re.sub("[\\\\\'\"]", "", sentence)
             tokenized=nlp(sentence)
             tags, toptag=get_locs(tokenized.ents)
+            queue1.put((row.name, tags))
             #write_coords(row.name, tags)
             #states=get_states(tags)
 
@@ -104,8 +128,19 @@ if __name__=="__main__":
     df_train['long_description'].fillna(df_train['description'], inplace=True)
     df_train['long_description'].fillna(df_train['title'], inplace=True)
     print(df_train.head())
+    workers = []
+    print("Initializing workers")
+    for i in range(10):
+        worker = CoordWorker(queue1, i+1, all_locs)
+        worker.daemon = True
+        worker.start()
+        workers.append(worker)
 
-    result=df_train.progress_apply(loc_destroyer, axis=1, result_type='expand')
+
+    result=df_train[:10000].progress_apply(loc_destroyer, axis=1, result_type='expand')
+    queue1.join()
+    for worker in workers:
+        worker.close()
     result.columns=['id', 'locs', 'top_loc']
     result=result.set_index('id')
     result.to_csv(DATA_DIR+"locations_%s.csv"%name)
