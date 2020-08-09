@@ -1,0 +1,74 @@
+curl -X PUT "localhost:9200/article?pretty" -H 'Content-Type: application/json' -d'
+{
+  "mappings":{
+    "properties": {
+      "text":{
+        "type": "text",
+        "analyzer": "standard",
+        "fielddata": true
+      },
+      "link":{
+        "type": "text"
+      },
+      "timestamp":{
+        "type": "date",
+        "null_value": "NULL",
+        "ignore_malformed": true
+      },
+      "points":{
+        "type": "geo_point",
+        "ignore_malformed" : true
+      },
+      "states":{
+        "type": "text",
+        "fielddata": true
+      },
+      "people":{
+        "type": "text",
+        "fielddata": true
+      },
+      "categories":{
+        "type": "text"
+      }
+    }
+  }
+}
+
+
+--------- Command if in KIBANA -------------
+
+PUT article
+{
+  "mappings":{
+    "properties": {
+      "text":{
+        "type": "text",
+        "analyzer": "standard",
+        "fielddata": true
+      },
+      "link":{
+        "type": "text"
+      },
+      "timestamp":{
+        "type": "date",
+        "null_value": "NULL",
+        "ignore_malformed": true
+      },
+      "points":{
+        "type": "geo_point",
+        "ignore_malformed" : true
+      },
+      "states":{
+        "type": "text",
+        "fielddata": true
+      },
+      "people":{
+        "type": "text",
+        "fielddata": true
+      },
+      "categories":{
+        "type": "text"
+      }
+    }
+  }
+}

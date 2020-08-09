@@ -10,13 +10,13 @@ Unsupervised categorization of news articles
 * [References](#references)
 
 
-## Setup
+## Setup (TODO: update with single DOCKERFILE asap)
 
 0. Install PyTorch
     - `pip install torch torchvision` if cuda gpu available (Recommended).
     - `pip install torch==1.5.0+cpu torchvision==0.6.0+cpu -f https://download.pytorch.org/whl/torch_stable.html` for cpu only.
     - https://pytorch.org - or just go to this site to get the best version for you.
-1. Run `pip install -r requirements.txt`
+1. Run `pip install -r requirements.txt` or `conda env create -f environment.yml` if conda is installed.
 2. Open a python interpreter and run
     ```
     import nltk
@@ -24,18 +24,34 @@ Unsupervised categorization of news articles
     nltk.download('stopwords')
     nltk.download('wordnet')
     ```
+3. Download the following and extract inside data/
+    ```
+    https://download.geonames.org/export/dump/IN.zip
+    https://download.geonames.org/export/dump/admin1CodesASCII.txt
+    ```
+4. Install docker and run following commands for elastic and kibana(development) if needed
+    ```
+    docker pull docker.elastic.co/elasticsearch/elasticsearch-oss:7.8.1
+    docker pull docker.elastic.co/kibana/kibana-oss:7.8.1
+    docker run -d --name elastic -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-oss:7.8.1
+    docker run -d --name kibana --link elastic:elasticsearch -p 5601:5601 docker.elastic.co/kibana/kibana-oss:7.8.1
+    ```
+    Run the curl command in `create_index.txt` to create elasticsearch index
 
 ## Run
 
 1. Put the dataset inside a folder `data/` and run `data_clean.py`
-2. Copy the cleaned `train_cleaned.pkl` into `data/cleaned` and run `get_langs_fast.py`
+2. Run `get_langs_fast.py`.
 3. Run `ultimate_destruction.py`, when asked for input enter the `start end` values for DF subpart processing.
-4. Results will be saved in `data/cleaned/submission_*.csv`
+4. Run `get_locs_people.py`, `get_time.py`, `get_coords.py` for extracting locs, people and time.
+5. Results will be saved in `data/cleaned/submission_*.csv`.
+6. Run `populate_elastic.py` (or `populate_elastic_notime.py` if web scraped html are not available), default elastic port used on `localhost`.
 
 ## Files
 
-- `data_clean` used to get a pandas DataFrame from the dataset csv
-- `get_langs_fast.py` used to get a languages DataFrame for title, desc and long_desc in the processsed DataFrame
+- `data_clean` used to get a pandas DataFrame from the dataset csv.
+- `get_langs_fast.py` used to get a languages DataFrame for title, desc and long_desc in the processsed DataFrame.
+- `get_locs_people.py`, `get_time.py`, `get_coords.py` used to extraction location, time and coordinates from articles and some scraped urls.
 - `preprocess.py` used to apply lemmatization and simple preprocessing on text.
 - `ultimate_destruction.py` uses the combination of both of the above dataframes with the complete implementation to generate a DataFrame of keywords.
 
@@ -50,26 +66,28 @@ Unsupervised categorization of news articles
 ## Preprocessing and language detection
 
 - `langdetect` library was used to get languages for each content. Parallelized the detection for faster results.
-- `RoBERTa` requires minimal to no preprocessing so the only sentence preprocessing (lemmatization and stopwords removal) was done for the url parser.
+- `RoBERTa` requires minimal to no preprocessing.
 
 ## Keyword extraction
 
-- All of the non-english rows in the `long_description` column are filled with english `title` or `description` (if available). The remaining non english rows are set to `None`.
 - A `the_destructor` function is applied on each row and it does the following:
-    - Iterate through each row and give links for Null content to url parses to get keywords
-    - Non-null rows have their sentences tokenized.
+    - Iterate through each row and give `long_description` to `RoBERTa` and `title` or `description` for Null content to the `multilingual bert`.
+    - Sentences tokenized.
     - Keywords are selected from the tokenized content using `RegexpParser` tree.
-    - All candidate keywords generated from the tree are then processed with `RoBERTa` to get their embeddings alongwith main content embeddings.
+    - All candidate keywords generated from the tree are then processed with `RoBERTa` or `BERT` to get their embeddings alongwith main content embeddings.
     - The candidate keywords and main content embeddings are then passed to the `get_topk` function which applies `MMR` algo to return top k keywords.
     - `MMR` automatically eliminates duplicates (i.e. keywords with similarity over a given threshold).
     - `the_destructor` return id and keywords for each row.
-- The id and keywords are then written in a submission dataframe.
-- `url_parse` is a simple function to get preprocessed tags from the url of the article.
-- Amongst all the data about 3080(<0.25%) rows had empty keywords as a result of a combination of no english content and empty urls.
+
+## Categorization
+
+- Embeddings generated for all categories in the tree.
+- Category embeddings and article embeddings fed into MMR to get top 2 matching categories.
 
 ## References
 
-- Basically [this](https://github.com/swisscom/ai-research-keyphrase-extraction) with `RoBERTa embeddings`
+- [swisscom/ai-research-keyphrase-extraction](https://github.com/swisscom/ai-research-keyphrase-extraction)
+
 
 
 ```

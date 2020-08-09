@@ -53,7 +53,7 @@ def get_coords(locs, all_loc, num):
             
 
 if __name__=="__main__":
-    locs = pd.read_pickle(DATA_DIR+"locations_newfull.pkl")
+    locs = pd.read_pickle(DATA_DIR+"entities_full.pkl")
 
     print("Queueing items")
     per_chunk = math.ceil(len(locs)/num_procs)+1 

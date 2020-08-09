@@ -105,7 +105,11 @@ with open(DATA_DIR+"Train_data.csv", "r") as f:
 output.seek(0)
 df_first = pd.read_csv(output, sep=u'\u0001')
 print(df_first.head())
-
+DATA_DIR+="cleaned/"
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
 df_first.to_csv(DATA_DIR+"train_cleaned.csv", sep=u'\u0001', index=False)
-df_first.to_pickle("train_cleaned.pkl")
+df_first.to_pickle(DATA_DIR+"train_cleaned.pkl")
+df_first['link'].to_csv(DATA_DIR+"links.csv")
+df_first['link'].to_pickle(DATA_DIR+"links.pkl")
 print("Bad files", bad_count)

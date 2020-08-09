@@ -1,0 +1,43 @@
+DELETE article
+
+PUT article
+{
+  "mappings":{
+    "properties": {
+      "text":{
+        "type": "text",
+        "analyzer": "standard",
+        "fielddata": true
+      },
+      "link":{
+        "type": "text"
+      },
+      "timestamp":{
+        "type": "date",
+        "null_value": "NULL",
+        "ignore_malformed": true
+      },
+      "points":{
+        "type": "geo_point",
+        "ignore_malformed" : true
+      },
+      "states":{
+        "type": "text",
+        "fielddata": true
+      },
+      "people":{
+        "type": "text",
+        "fielddata": true
+      },
+      "categories":{
+        "type": "text"
+      }
+    }
+  }
+}
+
+
+docker run -d --name elastic -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-oss:7.8.1
+
+docker run -d --name kibana --link elastic:elasticsearch -p 5601:5601 docker.elastic.co/kibana/kibana-oss:7.8.1
+
