@@ -28,7 +28,7 @@ ipython @ file:///tmp/build/80754af9/ipython_1593447377063/work
 ipython-genutils==0.2.0
 ipywidgets==7.5.1
 jedi @ file:///tmp/build/80754af9/jedi_1592841866100/work
-Jinja2==2.11.2
+Jinja2==2.11.3
 jmespath==0.10.0
 joblib==0.16.0
 json5==0.9.5
