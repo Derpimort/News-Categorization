@@ -103,7 +103,7 @@ tornado==6.0.4
 tqdm==4.48.0
 traitlets==4.3.3
 transformers==3.0.2
-urllib3==1.25.10
+urllib3==1.26.5
 wasabi==0.7.1
 wcwidth @ file:///tmp/build/80754af9/wcwidth_1593447189090/work
 webencodings==0.5.1
